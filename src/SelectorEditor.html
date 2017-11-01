@@ -1,0 +1,351 @@
+<div class="selector">
+  {{#if remainingClauses.length}}
+    <div>
+      Add Clause:
+      <select bind:value="__newClause" on:change="addClause()">
+        <option selected value="">
+          - Select a Clause -
+        </option>
+        {{#each remainingClauses as clause}}
+          <option value="{{clause}}">
+            {{clause}}
+          </option>
+        {{/each}}
+      </select>
+      <button on:click="addSelector()">Add Selector Clause</button>
+      <button on:click="fire('remove')">Remove Selector</button>
+    </div>
+  {{/if}}
+  {
+  <div class="clause">
+    <div class="name">
+      type:
+    </div>
+    <div class="value">
+      <select bind:value="selector.type">
+        <option value="&amp;">
+          &amp; (All clauses in the selector must be true.)
+        </option>
+        <option value="|">
+          | (At least one clause in the selector must be true.)
+        </option>
+        <option value="!&amp;">
+          !&amp; (All clauses in the selector must be false.)
+        </option>
+        <option value="!|">
+          !| (At least one clause in the selector must be false.)
+        </option>
+      </select>
+    </div>
+  </div>
+  {{#each clausesKeysTypes as clause}}
+    <div class="clause">
+      <div class="name">
+        {{clause.key}}:
+      </div>
+      <div class="value">
+        {{#if clause.type === "selector"}}
+          <:Self bind:selector="selector[clause.key]" on:remove="removeSelector(clause.key)" />
+        {{else}}
+          <div>
+            <button on:click="addClauseEntry(clause.key)">Add Entry</button>
+          </div>
+          [
+          {{#if clause.type.vector}}
+            {{#if isCompoundVectorClauseKeys[clause.key]}}
+              {{#each selector[clause.key] as clauseEntry, index}}
+                <div class="clause-entry">
+                  [<input type="text" bind:value="clauseEntry[0]" placeholder="property name" />,
+                    <ValueEditor
+                        on:makeDate="makeDate(clause.key, index)"
+                        on:makeNotDate="makeNotDate(clause.key, index)"
+                        bind:value="clauseEntry[1]"
+                        bind:wholeEntry="clauseEntry"
+                        valueTypeInitial="{{clause.type.type}}"
+                        allowedTypes="{{clause.type.allowedTypes}}"></ValueEditor>]
+                  <button on:click="removeClauseEntry(clause.key, index)">Remove</button>
+                </div>
+              {{/each}}
+            {{else}}
+              <div class="clause-entry">
+                <input type="text" bind:value="selector[clause.key][0]" placeholder="property name" />,
+                <ValueEditor
+                    on:makeDate="makeDate(clause.key, null)"
+                    on:makeNotDate="makeNotDate(clause.key, null)"
+                    bind:value="selector[clause.key][1]"
+                    bind:wholeEntry="selector[clause.key]"
+                    valueTypeInitial="{{clause.type.type}}"
+                    allowedTypes="{{clause.type.allowedTypes}}"></ValueEditor>
+              </div>
+            {{/if}}
+          {{else}}
+            {{#if isCompoundScalarClauseKeys[clause.key]}}
+              {{#each selector[clause.key] as clauseEntry, index}}
+                <div class="clause-entry">
+                  <ValueEditor
+                      bind:value="clauseEntry"
+                      valueTypeInitial="{{clause.type.type}}"
+                      allowedTypes="{{clause.type.allowedTypes}}"></ValueEditor>
+                  <button on:click="removeClauseEntry(clause.key, index)">Remove</button>
+                </div>
+              {{/each}}
+            {{else}}
+              <div class="clause-entry">
+                <ValueEditor
+                    bind:value="selector[clause.key]"
+                    valueTypeInitial="{{clause.type.type}}"
+                    allowedTypes="{{clause.type.allowedTypes}}"></ValueEditor>
+              </div>
+            {{/if}}
+          {{/if}}
+          ]
+        {{/if}}
+      </div>
+      {{#if clause.type !== "selector"}}
+        <div class="remove">
+          <button on:click="removeClause(clause.key)">Remove</button>
+        </div>
+      {{/if}}
+    </div>
+  {{/each}}
+  }
+</div>
+
+<script>
+  import ValueEditor from './ValueEditor.html';
+
+  export default {
+    data () {
+      return {
+        __newClause: "",
+        supportedClauses: {
+          "guid": {type: "int", vector: false, allowedTypes: ["int"]},
+          "!guid": {type: "int", vector: false, allowedTypes: ["int"]},
+          "tag": {type: "string", vector: false, allowedTypes: ["string"]},
+          "!tag": {type: "string", vector: false, allowedTypes: ["string"]},
+          "isset": {type: "string", vector: false, allowedTypes: ["string"]},
+          "!isset": {type: "string", vector: false, allowedTypes: ["string"]},
+          "data": {type: null, vector: true, allowedTypes: ["string", "int", "float", "boolean", "date"]},
+          "!data": {type: null, vector: true, allowedTypes: ["string", "int", "float", "boolean", "date"]},
+          "strict": {type: null, vector: true, allowedTypes: ["string", "int", "float", "boolean", "date"]},
+          "!strict": {type: null, vector: true, allowedTypes: ["string", "int", "float", "boolean", "date"]},
+          "array": {type: null, vector: true, allowedTypes: ["string", "int", "float", "boolean", "date"]},
+          "!array": {type: null, vector: true, allowedTypes: ["string", "int", "float", "boolean", "date"]},
+          "match": {type: "string", vector: true, allowedTypes: ["string"]},
+          "!match": {type: "string", vector: true, allowedTypes: ["string"]},
+          "pmatch": {type: "string", vector: true, allowedTypes: ["string"]},
+          "!pmatch": {type: "string", vector: true, allowedTypes: ["string"]},
+          "ipmatch": {type: "string", vector: true, allowedTypes: ["string"]},
+          "!ipmatch": {type: "string", vector: true, allowedTypes: ["string"]},
+          "like": {type: "string", vector: true, allowedTypes: ["string"]},
+          "!like": {type: "string", vector: true, allowedTypes: ["string"]},
+          "ilike": {type: "string", vector: true, allowedTypes: ["string"]},
+          "!ilike": {type: "string", vector: true, allowedTypes: ["string"]},
+          "gt": {type: "float", vector: true, allowedTypes: ["int", "float", "date"]},
+          "!gt": {type: "float", vector: true, allowedTypes: ["int", "float", "date"]},
+          "gte": {type: "float", vector: true, allowedTypes: ["int", "float", "date"]},
+          "!gte": {type: "float", vector: true, allowedTypes: ["int", "float", "date"]},
+          "lt": {type: "float", vector: true, allowedTypes: ["int", "float", "date"]},
+          "!lt": {type: "float", vector: true, allowedTypes: ["int", "float", "date"]},
+          "lte": {type: "float", vector: true, allowedTypes: ["int", "float", "date"]},
+          "!lte": {type: "float", vector: true, allowedTypes: ["int", "float", "date"]},
+          "ref": {type: "int", vector: true, allowedTypes: ["int"]},
+          "!ref": {type: "int", vector: true, allowedTypes: ["int"]}
+        },
+        selector: {type: '&'}
+      }
+    },
+
+    computed: {
+      remainingClauses: (selector, supportedClauses) => Object.keys(supportedClauses).filter((i) => !selector.hasOwnProperty(i)),
+      clausesKeysTypes: (selector, supportedClauses) => Object.keys(selector).filter((i) => i !== "type").map((key) => supportedClauses.hasOwnProperty(key) ? {key, type: supportedClauses[key]} : {key, type: 'selector'}),
+      isCompoundVectorClauseKeys: (selector, supportedClauses) => {
+        const entries = Object.entries(selector);
+        const filtered = entries.filter((i) => i[0] !== "type" && supportedClauses[i[0]].vector);
+        const mapped = filtered.map((i) => {i[1] = Array.isArray(i[1][0]); return i;});
+        const map = mapped.length ? Object.assign(...mapped.map(([k, v]) => ({[k]: v}))) : {};
+        return map;
+      },
+      isCompoundScalarClauseKeys: (selector, supportedClauses) => {
+        const entries = Object.entries(selector);
+        const filtered = entries.filter((i) => i[0] !== "type" && !supportedClauses[i[0]].vector);
+        const mapped = filtered.map((i) => {i[1] = Array.isArray(i[1]); return i;});
+        const map = mapped.length ? Object.assign(...mapped.map(([k, v]) => ({[k]: v}))) : {};
+        return map;
+      }
+    },
+
+    methods: {
+      addClause () {
+        const selector = this.get("selector");
+        const newClause = this.get("__newClause");
+        const supportedClauses = this.get("supportedClauses");
+
+        if (newClause === "") {
+          return;
+        }
+
+        if (!(newClause in selector)) {
+          selector[newClause] = this.getDefaultValue(supportedClauses[newClause]);
+        }
+
+        this.set({
+          selector,
+          __newClause: ""
+        });
+      },
+
+      removeClause (clause) {
+        const selector = this.get("selector");
+        delete selector[clause];
+        this.set({selector});
+      },
+
+      addClauseEntry (clause) {
+        const selector = this.get("selector");
+        const supportedClauses = this.get("supportedClauses");
+
+        if (clause in selector) {
+          if (
+              (supportedClauses[clause].vector && !this.isCompoundVectorClause(selector[clause]))
+              || (!supportedClauses[clause].vector && !this.isCompoundScalarClause(selector[clause]))
+            ) {
+            const firstEntry = selector[clause];
+            selector[clause] = [firstEntry];
+          }
+
+          selector[clause].push(this.getDefaultValue(supportedClauses[clause]));
+        }
+
+        this.set({selector});
+      },
+
+      removeClauseEntry (clause, index) {
+        const selector = this.get("selector");
+        const supportedClauses = this.get("supportedClauses");
+
+        if (clause in selector) {
+          selector[clause].splice(index, 1);
+
+          if (
+              (supportedClauses[clause].vector && selector[clause].length === 1 && this.isCompoundVectorClause(selector[clause]))
+              || (!supportedClauses[clause].vector && selector[clause].length === 1 && this.isCompoundScalarClause(selector[clause]))
+            ) {
+            const firstEntry = selector[clause][0];
+            selector[clause] = firstEntry;
+          }
+        }
+
+        this.set({selector});
+      },
+
+      makeDate (clauseKey, index) {
+        const selector = this.get("selector");
+
+        console.log("make date");
+
+        if (index === null) {
+          selector[clauseKey][1] = null;
+          if (selector[clauseKey].length === 2) {
+            selector[clauseKey].push("");
+          }
+        } else {
+          selector[clauseKey][index][1] = null;
+          if (selector[clauseKey][index].length === 2) {
+            selector[clauseKey][index].push("");
+          }
+        }
+
+        this.set({selector});
+      },
+
+      makeNotDate (clauseKey, index) {
+        const selector = this.get("selector");
+
+        console.log("make not date");
+
+        if (index === null) {
+          if (selector[clauseKey].length === 3) {
+            selector[clauseKey].splice(2, 1);
+          }
+        } else {
+          if (selector[clauseKey][index].length === 3) {
+            selector[clauseKey][index].splice(2, 1);
+          }
+        }
+
+        this.set({selector});
+      },
+
+      getDefaultValue (typeObj) {
+        switch (typeObj.type) {
+          case "int":
+            return typeObj.vector ? ["", 1] : 1;
+          case "float":
+            return typeObj.vector ? ["", 0.1] : 0.1;
+          case "boolean":
+            return typeObj.vector ? ["", true] : true;
+          case "string":
+          default:
+            return typeObj.vector ? ["", ""] : "";
+        }
+      },
+
+      addSelector () {
+        const selector = this.get("selector");
+
+        // Find the first number that's not taken.
+        let i = 1;
+        while (selector.hasOwnProperty(""+i)) {
+          i++;
+        }
+        selector[""+i] = {"type": "&"};
+
+        this.set({selector});
+      },
+
+      removeSelector (key) {
+        const selector = this.get("selector");
+
+        // Delete the keyed selector.
+        delete selector[key];
+        // Rearrange all the following selectors.
+        let i = parseInt(key, 10) + 1;
+        while (selector.hasOwnProperty(""+i)) {
+          selector[""+(i-1)] = selector[""+i];
+          delete selector[""+i];
+          i++;
+        }
+
+        this.set({selector});
+      },
+
+      isCompoundVectorClause (value) {
+        return Array.isArray(value[0]);
+      },
+
+      isCompoundScalarClause (value) {
+        return Array.isArray(value);
+      }
+    },
+
+    components: {
+      ValueEditor
+    }
+  };
+</script>
+
+<style>
+  .selector {
+    margin: .5em;
+    padding: .5em;
+    display: flex;
+    flex-direction: column;
+    border: 1px dotted;
+  }
+  .selector .clause, .selector .clause .clause-entry {
+    padding: .5em 1em;
+    display: flex;
+    flex-direction: row;
+  }
+</style>

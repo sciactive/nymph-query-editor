@@ -1,0 +1,494 @@
+<div class="query-editor">
+  <h2>Query Editor <button on:click="openHelpDialog()">Help</button></h2>
+  <h3>Options</h3>
+  <div class="options-editor">
+    {{#if remainingOptions.length}}
+      <div>
+        Add Option:
+        <select bind:value="__newOption" on:change="addOption()">
+          <option selected value="">
+            - Select an Option -
+          </option>
+          {{#each remainingOptions as option}}
+            <option value="{{option}}">
+              {{option}}
+            </option>
+          {{/each}}
+        </select>
+      </div>
+    {{/if}}
+    <pre>{</pre>
+    {{#each optionsKeysTypes as option}}
+      <div class="option">
+        <div class="name">
+          {{option.key}}:
+        </div>
+        <div class="value">
+          {{#if option.type === "class"}}
+            <select bind:value="options[option.key]">
+              {{#each supportedClasses as curClass}}
+                <option value="{{curClass.class}}">
+                  {{curClass.class}}
+                </option>
+              {{/each}}
+            </select>
+          {{elseif option.type === "int" || option.type === "boolean" || option.type === "string"}}
+            <ValueEditor bind:value="options[option.key]" valueTypeInitial="{{option.type}}" allowedTypes="{{[option.type]}}"></ValueEditor>
+          {{else}}
+            <select bind:value="options[option.key]">
+              {{#each option.type as enumVal}}
+                <option value="{{enumVal}}">
+                  {{enumVal}}
+                </option>
+              {{/each}}
+            </select>
+          {{/if}}
+        </div>
+        <div class="remove">
+          <button on:click="removeOption(option.key)">Remove</button>
+        </div>
+      </div>
+    {{/each}}
+    <pre>}</pre>
+  </div>
+  <h3>Selectors</h3>
+  <div class="selector-editor">
+    <div>
+      <button on:click="addSelector()">Add Selector</button>
+    </div>
+    {{#each selectors as selector, index}}
+      <SelectorEditor bind:selector on:remove="removeSelector(index)"></SelectorEditor>
+    {{/each}}
+  </div>
+  <div>
+    <label><input type="checkbox" bind:checked="showQuery" />Show Query Preview</label>
+  </div>
+  {{#if showQuery}}
+    <h3>Query</h3>
+    <div class="query-result">
+      <pre class="query">{{queryText}}</pre>
+    </div>
+  {{/if}}
+  {{#if __showHelp}}
+  <div class="help-dialog-container">
+    <div class="help-dialog-overlay" on:click="closeHelpDialog()"></div>
+    <div class="help-dialog">
+      <h3>How to Build Nymph Queries</h3>
+
+      <div>
+        options is an associative array, which contains any of the following
+        settings (in the form options['name'] = value):
+
+        <ul>
+          <li>
+            class - (string) The class to create each entity with.
+          </li>
+          <li>
+            limit - (int) The limit of entities to be returned.
+          </li>
+          <li>
+            offset - (int) The offset from the oldest matching entity to start
+            retrieving.
+          </li>
+          <li>
+            reverse - (bool) If true, entities will be retrieved from newest to
+            oldest. Therefore, offset will be from the newest entity.
+          </li>
+          <li>
+            sort - (string) How to sort the entities. Accepts "guid", "cdate", and
+            "mdate". Defaults to "cdate".
+          </li>
+          <li>
+            skip_ac - (bool) If true, the user manager will not filter returned
+            entities according to access controls.
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        If a class is specified, it must have a factory() static method that
+        returns a new instance.
+      </div>
+
+      <div>
+        Selectors are also associative arrays. Any amount of selectors can be
+        provided. Empty selectors will be ignored. The first member of a selector
+        must be a "type" string. The type string can be:
+
+        <ul>
+          <li>
+            &amp; - (and) All values in the selector must be true.
+          </li>
+          <li>
+            | - (or) At least one value in the selector must be true.
+          </li>
+          <li>
+            !&amp; - (not and) All values in the selector must be false.
+          </li>
+          <li>
+            !| - (not or) At least one value in the selector must be false.
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        The rest of the entries in the selector are either more selectors or
+        associative entries called selector clauses, which can be any of the
+        following (in the form selector['name'] = value, or
+        selector['name'] = [value1, value2,...]):
+
+        <ul>
+          <li>
+            guid - A GUID. True if the entity's GUID is equal.
+          </li>
+          <li>
+            tag - A tag. True if the entity has the tag.
+          </li>
+          <li>
+            isset - A name. True if the named variable exists and is not null.
+          </li>
+          <li>
+            data - An array with a name, then value. True if the named variable is
+            defined and equal.
+          </li>
+          <li>
+            strict - An array with a name, then value. True if the named variable
+            is defined and identical.
+          </li>
+          <li>
+            array - An array with a name, then value. True if the named variable is
+            an array containing the value. Uses in_array().
+          </li>
+          <li>
+            match - An array with a name, then regular expression. True if the
+            named variable matches. Uses preg_match(). More powerful than "pmatch"
+            but slower. Must be surrounded by "/" delimiters.
+          </li>
+          <li>
+            pmatch - An array with a name, then regular expression. True if the
+            named variable matches. Uses POSIX RegExp. Case sensitive. Faster than
+            "match". Must *not* be surrounded by any delimiters.
+          </li>
+          <li>
+            ipmatch - An array with a name, then regular expression. True if the
+            named variable matches. Uses POSIX RegExp. Case insensitive. Faster
+            than "match". Must *not* be surrounded by any delimiters.
+          </li>
+          <li>
+            like - An array with a name, then pattern. True if the named variable
+            matches. Uses % for variable length wildcard and _ for single character
+            wildcard. Case sensitive.
+          </li>
+          <li>
+            ilike - An array with a name, then pattern. True if the named variable
+            matches. Uses % for variable length wildcard and _ for single character
+            wildcard. Case insensitive.
+          </li>
+          <li>
+            gt - An array with a name, then value. True if the named variable is
+            greater than the value.
+          </li>
+          <li>
+            gte - An array with a name, then value. True if the named variable is
+            greater than or equal to the value.
+          </li>
+          <li>
+            lt - An array with a name, then value. True if the named variable is
+            less than the value.
+          </li>
+          <li>
+            lte - An array with a name, then value. True if the named variable is
+            less than or equal to the value.
+          </li>
+          <li>
+            ref - An array with a name, then either a entity, or a GUID. True if
+            the named variable is the entity or an array containing the entity.
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        These clauses can all be negated, by prefixing them with an exclamation
+        point, such as "!isset".
+      </div>
+
+      <div>
+        This example will retrieve the last two entities where:
+
+        <ul>
+          <li>
+            It has 'person' tag.
+          </li>
+          <li>
+            spouse exists and is not null.
+          </li>
+          <li>
+            gender is male and lname is Smith.
+          </li>
+          <li>
+            warnings is not an integer 0.
+          </li>
+          <li>
+            It has 'level1' and 'level2' tags, or it has 'access1' and 'access2'
+            tags.
+          </li>
+          <li>
+            It has either 'employee' or 'manager' tag.
+          </li>
+          <li>
+            name is either Clark, James, Chris, Christopher, Jake, or Jacob.
+          </li>
+          <li>
+            If age is 22 or more, then pay is not greater than 8.
+          </li>
+        </ul>
+
+        <pre>Nymph.getEntities(
+  {
+    'reverse': true,
+    'limit': 2
+  },
+  {
+    'type': '&amp;', // all must be true
+    'tag': 'person',
+    'isset': 'spouse',
+    'data': [
+      ['gender', 'male'],
+      ['lname', 'Smith']
+    ],
+    '!strict': ['warnings', 0]
+  },
+  {
+    'type': '|', // at least one of the selectors in this must evaluate to true
+    '1': {
+      'type': '&amp;',
+      'tag': ['level1', 'level2']
+    },
+    '2': {
+      'type': '&amp;',
+      'tag': ['access1', 'access2']
+    }
+  },
+  {
+    'type': '|', // at least one must be true
+    'tag': ['employee', 'manager']
+  },
+  {
+    'type': '|',
+    'data': [
+      ['name', 'Clark'],
+      ['name', 'James']
+    ],
+    'pmatch': [
+      ['name', 'Chris(topher)?'],
+      ['name', 'Ja(ke|cob)']
+    ]
+  },
+  {
+    'type': '!|', // at least one must be false
+    'gte': ['age', 22],
+    'gt': ['pay', 8]
+  }
+);</pre>
+      </div>
+
+      <div class="actions">
+        <button on:click="closeHelpDialog()">Close</button>
+      </div>
+    </div>
+  </div>
+  {{/if}}
+</div>
+
+<script>
+  import SelectorEditor from './SelectorEditor.html';
+  import ValueEditor from './ValueEditor.html';
+
+  export default {
+    data () {
+      return {
+        __newOption: "",
+        __showHelpDialog: false,
+        supportedClasses: [],
+        supportedOptions: {
+          "class": "class",
+          "limit": "int",
+          "offset": "int",
+          "reverse": "boolean",
+          "sort": ["cdate", "mdate", "guid"],
+          "skip_ac": "boolean"
+        },
+        options: {},
+        selectors: [],
+        showQuery: false
+      }
+    },
+
+    computed: {
+      remainingOptions: (options, supportedOptions) => Object.keys(supportedOptions).filter((i) => !options.hasOwnProperty(i)),
+      optionsKeysTypes: (options, supportedOptions) => Object.keys(options).map((key) => ({key, type: supportedOptions[key]})),
+      queryText: (options, selectors) => {
+        let json = JSON.stringify([options, ...selectors], null, 2);
+        const regex = /\[\s*([^\[\]]*)(?:[\t\n]+|\s{2,})([^\[\]]*)\s*\]/g;
+        const regex2 = /\[\s*([^\[\]]*[^\[\]\s])\s+\]/g;
+        while (json.match(regex)) {
+          json = json.replace(regex, "[$1 $2]");
+        }
+        while (json.match(regex2)) {
+          json = json.replace(regex2, "[$1]");
+        }
+        return "Nymph.getEntities("+json.slice(1, -1)+")";
+      }
+    },
+
+    methods: {
+      addOption () {
+        const options = this.get("options");
+        const newOption = this.get("__newOption");
+        const supportedOptions = this.get("supportedOptions");
+
+        if (newOption === "") {
+          return;
+        }
+
+        if (!(newOption in options)) {
+          options[newOption] = this.getDefaultValue(supportedOptions[newOption]);
+        }
+
+        this.set({
+          options,
+          __newOption: ""
+        });
+      },
+
+      removeOption (option) {
+        const options = this.get("options");
+        delete options[option];
+        this.set({options});
+      },
+
+      getDefaultValue (type) {
+        switch (type) {
+          case "class":
+            const classes = this.get("supportedClasses");
+            return classes.length ? classes[0].class : '';
+          case "int":
+            return 0;
+          case "float":
+            return 0.0;
+          case "boolean":
+            return true;
+          case "string":
+            return "";
+          case "date":
+            return Date.now();
+          default:
+            if (Array.isArray(type)) {
+              return type[0];
+            }
+            return "";
+        }
+      },
+
+      addSelector () {
+        const selectors = this.get("selectors");
+        selectors.push({type: '&'});
+        this.set({selectors});
+      },
+
+      removeSelector (index) {
+        const selectors = this.get("selectors");
+        selectors.splice(index, 1);
+        this.set({selectors});
+      },
+
+      openHelpDialog () {
+        this.set({__showHelp: true});
+      },
+
+      closeHelpDialog () {
+        this.set({__showHelp: false});
+      }
+    },
+
+    components: {
+      SelectorEditor,
+      ValueEditor
+    }
+  };
+</script>
+
+<style>
+  .query-editor {
+    font-family: monospace;
+  }
+
+  .options-editor, .selector-editor, .selector-editor .selector {
+    padding-left: 1em;
+    display: flex;
+    flex-direction: column;
+  }
+  .options-editor .option, .selector-editor .selector .clause {
+    padding: .5em 1em;
+    display: flex;
+    flex-direction: row;
+  }
+
+  .query-result {
+    border: 1px solid;
+  }
+  .query-result .query {
+    font-family: monospace;
+    margin: 0;
+    padding: 1em;
+    overflow: auto;
+    max-height: 200px;
+  }
+
+  .help-dialog-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 1000;
+  }
+  .help-dialog-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 1;
+  }
+  .help-dialog {
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0px 5px 36px 0px rgba(0,0,0,0.25);
+    background-color: #fff;
+    padding: 2em;
+    max-height: 80vh;
+    max-width: 80vw;
+    overflow: auto;
+    z-index: 2;
+  }
+  .help-dialog > * {
+    margin-bottom: 1em;
+  }
+  .help-dialog > *:last-child {
+    margin-bottom: 0;
+  }
+  .help-dialog .actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+  }
+  .help-dialog .actions > * {
+    margin-left: 1em;
+  }
+</style>

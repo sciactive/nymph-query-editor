@@ -1,0 +1,211 @@
+<span>
+  {{#if allowedTypes.length > 1}}
+    (Type: <select bind:value="valueTypeCurrent" on:change="changeValueType()">
+      {{#if allowedTypes.indexOf("string") > -1}}
+        <option value="string">
+          String
+        </option>
+      {{/if}}
+      {{#if allowedTypes.indexOf("int") > -1}}
+        <option value="int">
+          Integer
+        </option>
+      {{/if}}
+      {{#if allowedTypes.indexOf("float") > -1}}
+        <option value="float">
+          Float
+        </option>
+      {{/if}}
+      {{#if allowedTypes.indexOf("boolean") > -1}}
+        <option value="boolean">
+          Boolean
+        </option>
+      {{/if}}
+      {{#if allowedTypes.indexOf("date") > -1}}
+        <option value="date">
+          Date
+        </option>
+      {{/if}}
+    </select>)
+    Value:
+  {{/if}}
+  {{#if valueType === "string"}}
+    <input type="text" bind:value="value" />
+  {{elseif valueType === "int"}}
+    <input type="number" bind:value="value" on:input="makeInt()" />
+  {{elseif valueType === "float"}}
+    <input type="number" bind:value="value" />
+  {{elseif valueType === "boolean"}}
+    <label><input type="checkbox" bind:checked="value" /> ({{#if value}}True{{else}}False{{/if}})</label>
+  {{elseif valueType === "date"}}
+    <input
+        type="text"
+        bind:value="wholeEntry[2]"
+        on:input="handleDateInput()"
+        placeholder="Enter a date in basically any format, including things like &quot;now&quot;, &quot;last friday&quot;, &quot;+1 week&quot;, and &quot;oct 12, 2017 3:00 pm&quot;"
+        title="Enter a date in basically any format, including things like &quot;now&quot;, &quot;last friday&quot;, &quot;+1 week&quot;, and &quot;oct 12, 2017 3:00 pm&quot;" />
+    Interpreted as: <code class="date-interpretation">{{__dateInputInterpretation}}</code> <abbr title="This interpretation may be inaccurate, as PHP's strtotime function may return slightly different results, and the server may be using a different timezone.">(!)</abbr>
+  {{/if}}
+</span>
+
+<script>
+  const strtotime = window.strtotime || require("locutus/php/datetime/strtotime");
+
+  export default {
+    oncreate () {
+      if (!strtotime) {
+        throw new Error("ValueEditor requires Locutus' strtotime for date interpretation.");
+      }
+
+      const valueTypeInitial = this.get("valueTypeInitial");
+      const value = this.get("value");
+      let valueTypeCurrent;
+      if (value === null) {
+        valueTypeCurrent = "date";
+      } else {
+        valueTypeCurrent = valueTypeInitial === null ? this.get("valueType") : valueTypeInitial;
+      }
+      this.set({valueTypeCurrent});
+
+      if (valueTypeCurrent === "date") {
+        this.handleDateInput();
+      }
+
+      let dateHandleInterval;
+      this.observe("valueTypeCurrent", (value) => {
+        if (value === "date") {
+          if (!dateHandleInterval) {
+            dateHandleInterval = setInterval(() => this.handleDateInput(), 1000);
+          }
+        } else {
+          if (dateHandleInterval) {
+            clearInterval(dateHandleInterval);
+            dateHandleInterval = false;
+          }
+        }
+      });
+
+      this.observe("value", (newValue, oldValue) => {
+        if (
+            newValue === null && oldValue !== null
+            || newValue !== null && oldValue === null
+            || typeof newValue !== typeof oldValue
+          ) {
+          const valueType = this.get("valueType");
+          this.set({valueTypeCurrent: valueType});
+          if (valueType === "date") {
+            this.handleDateInput();
+          }
+        }
+      }, {init: false});
+    },
+
+    data () {
+      return {
+        __dateInputTimestamp: 0,
+        __dateInputInterpretation: "",
+        valueTypeInitial: null,
+        valueTypeCurrent: null,
+        allowedTypes: ["string", "int", "float", "boolean", "date"],
+        value: "",
+        wholeValue: ["", ""],
+      }
+    },
+
+    computed: {
+      valueType: (value, valueTypeCurrent, allowedTypes) => {
+        if (allowedTypes.length === 1) {
+          return allowedTypes[0];
+        }
+        if (value === null) {
+          return "date";
+        }
+        switch (typeof value) {
+          case "number":
+            if (value % 1 > 0) {
+              return valueTypeCurrent || "float";
+            } else {
+              return valueTypeCurrent || "int";
+            }
+          case "boolean":
+            return "boolean";
+          case "string":
+          default:
+            return "string";
+        }
+      }
+    },
+
+    methods: {
+      changeValueType () {
+        const valueTypeCurrent = this.get("valueTypeCurrent");
+        let value = this.get("value");
+
+        switch (valueTypeCurrent) {
+          case "string":
+            this.fire("makeNotDate");
+            value = ""+value;
+            break;
+          case "int":
+            this.fire("makeNotDate");
+            value = parseInt(value, 10);
+            break;
+          case "float":
+            this.fire("makeNotDate");
+            value = parseFloat(value, 10);
+            break;
+          case "boolean":
+            this.fire("makeNotDate");
+            value = !!value;
+            break;
+          case "date":
+            this.fire("makeDate");
+            this.handleDateInput();
+            return;
+        }
+
+        this.set({value});
+      },
+
+      handleDateInput () {
+        const wholeEntry = this.get("wholeEntry");
+        let dateString = wholeEntry[2];
+        const match = dateString.match(/^\s*(\d+)?\s*(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s*(\d+)?\s*$/i);
+        if (match) {
+          if (match[1] === undefined && match[2] === undefined) {
+            dateString += " "+(new Date().getDate())+" ";
+          }
+          dateString += " "+(new Date().getFullYear());
+        }
+        const __dateInputTimestamp = this.interpretDate(dateString);
+        const __dateInputInterpretation = __dateInputTimestamp ? this.formatDate(__dateInputTimestamp) : "Unrecognized";
+
+        this.set({
+          __dateInputTimestamp,
+          __dateInputInterpretation
+        });
+      },
+
+      interpretDate (input) {
+        return strtotime(""+input);
+      },
+
+      formatDate (timestamp) {
+        return new Date(timestamp * 1000).toLocaleString(undefined, {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric",
+          timeZoneName: "short"
+        });
+      },
+
+      makeInt () {
+        this.set({value: parseInt(this.get("value"), 10)});
+      }
+    }
+  };
+</script>
