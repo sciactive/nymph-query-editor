@@ -1,24 +1,16 @@
 {
   "name": "nymph-query-editor",
-  "version": "0.0.1-alpha1",
+  "version": "1.0.0",
   "description": "A Nymph query editor built with Svelte.",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
     "build": "npm run build-QueryEditor && npm run build-SelectorEditor && npm run build-ValueEditor",
-    "build-QueryEditor": "npm run build-QueryEditor-iife && npm run build-QueryEditor-cjs && npm run build-QueryEditor-umd",
-    "build-QueryEditor-iife": "svelte compile --format iife src/QueryEditor.html > lib-iife/QueryEditor.js",
-    "build-QueryEditor-cjs": "svelte compile --format cjs src/QueryEditor.html > lib-cjs/QueryEditor.js",
-    "build-QueryEditor-umd": "svelte compile --format umd src/QueryEditor.html > lib-umd/QueryEditor.js",
-    "build-SelectorEditor": "npm run build-SelectorEditor-iife && npm run build-SelectorEditor-cjs && npm run build-SelectorEditor-umd",
-    "build-SelectorEditor-iife": "svelte compile --format iife src/SelectorEditor.html > lib-iife/SelectorEditor.js",
-    "build-SelectorEditor-cjs": "svelte compile --format cjs src/SelectorEditor.html > lib-cjs/SelectorEditor.js",
-    "build-SelectorEditor-umd": "svelte compile --format umd src/SelectorEditor.html > lib-umd/SelectorEditor.js",
-    "build-ValueEditor": "npm run build-ValueEditor-iife && npm run build-ValueEditor-cjs && npm run build-ValueEditor-umd",
-    "build-ValueEditor-iife": "svelte compile --format iife src/ValueEditor.html > lib-iife/ValueEditor.js",
-    "build-ValueEditor-cjs": "svelte compile --format cjs src/ValueEditor.html > lib-cjs/ValueEditor.js",
-    "build-ValueEditor-umd": "svelte compile --format umd src/ValueEditor.html > lib-umd/ValueEditor.js",
+    "build-QueryEditor": "svelte compile --format es src/QueryEditor.html > lib/QueryEditor.js && babel lib/QueryEditor.js -o lib/QueryEditor.js",
+    "build-SelectorEditor": "svelte compile --format es src/SelectorEditor.html > lib/SelectorEditor.js && babel lib/SelectorEditor.js -o lib/SelectorEditor.js",
+    "build-ValueEditor": "svelte compile --format es src/ValueEditor.html > lib/ValueEditor.js && babel lib/ValueEditor.js -o lib/ValueEditor.js",
+    "prepare": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -35,6 +27,11 @@
   },
   "homepage": "https://github.com/sciactive/nymph-query-editor#readme",
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-es2015-modules-umd": "^6.24.1",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-3": "^6.24.1",
     "svelte-cli": "^1.4.0"
   },
   "dependencies": {
