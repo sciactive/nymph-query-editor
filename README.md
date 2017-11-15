@@ -53,6 +53,6 @@ const query = [myQueryEditor.get("options"), ...myQueryEditor.get("selectors")];
 
 For a thorough step by step guide to setting up Nymph on your own server, visit the [Setup Guide](https://github.com/sciactive/nymph/wiki/Setup-Guide).
 
-## Documentation
+## API Docs
 
-Check out the documentation in the wiki, [Technical Documentation Index](https://github.com/sciactive/nymph/wiki/Technical-Documentation).
+Check out the [API Docs in the wiki](https://github.com/sciactive/nymph/wiki/API-Docs).
