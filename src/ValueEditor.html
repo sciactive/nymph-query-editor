@@ -1,6 +1,6 @@
 <span>
   {{#if allowedTypes.length > 1}}
-    (Type: <select bind:value="valueTypeCurrent" on:change="changeValueType()">
+    (Type: <select class="{{classSelect}}" bind:value="valueTypeCurrent" on:change="changeValueType()">
       {{#if allowedTypes.indexOf("string") > -1}}
         <option value="string">
           String
@@ -30,15 +30,16 @@
     Value:
   {{/if}}
   {{#if valueType === "string"}}
-    <input type="text" bind:value="value" />
+    <input class="{{classInput}}" type="text" bind:value="value" />
   {{elseif valueType === "int"}}
-    <input type="number" bind:value="value" on:input="makeInt()" />
+    <input class="{{classInput}}" type="number" bind:value="value" on:input="makeInt()" />
   {{elseif valueType === "float"}}
-    <input type="number" bind:value="value" />
+    <input class="{{classInput}}" type="number" bind:value="value" />
   {{elseif valueType === "boolean"}}
-    <label><input type="checkbox" bind:checked="value" /> ({{#if value}}True{{else}}False{{/if}})</label>
+    <label><input class="{{classCheckbox}}" type="checkbox" bind:checked="value" /> ({{#if value}}True{{else}}False{{/if}})</label>
   {{elseif valueType === "date"}}
     <input
+        class="{{classInput}}"
         type="text"
         bind:value="wholeEntry[2]"
         on:input="handleDateInput()"
@@ -109,6 +110,9 @@
         allowedTypes: ["string", "int", "float", "boolean", "date"],
         value: "",
         wholeValue: ["", ""],
+        classCheckbox: '',
+        classInput: '',
+        classSelect: '',
       }
     },
 

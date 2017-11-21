@@ -2,7 +2,7 @@
   {{#if remainingClauses.length}}
     <div>
       Add Clause:
-      <select bind:value="__newClause" on:change="addClause()">
+      <select class="{{classSelect}}" bind:value="__newClause" on:change="addClause()">
         <option selected value="">
           - Select a Clause -
         </option>
@@ -12,8 +12,8 @@
           </option>
         {{/each}}
       </select>
-      <button on:click="addSelector()">Add Selector Clause</button>
-      <button on:click="fire('remove')">Remove Selector</button>
+      <button class="{{classAddButton}}" on:click="addSelector()">Add Selector Clause</button>
+      <button class="{{classRemoveButton}}" on:click="fire('remove')">Remove Selector</button>
     </div>
   {{/if}}
   {
@@ -22,7 +22,7 @@
       type:
     </div>
     <div class="value">
-      <select bind:value="selector.type">
+      <select class="{{classSelect}}" bind:value="selector.type">
         <option value="&amp;">
           &amp; (All clauses in the selector must be true.)
         </option>
@@ -45,37 +45,50 @@
       </div>
       <div class="value">
         {{#if clause.type === "selector"}}
-          <:Self bind:selector="selector[clause.key]" on:remove="removeSelector(clause.key)" />
+          <:Self
+              bind:selector="selector[clause.key]"
+              on:remove="removeSelector(clause.key)"
+              classCheckbox="{{classCheckbox}}"
+              classInput="{{classInput}}"
+              classSelect="{{classSelect}}"
+              classAddButton="{{classAddButton}}"
+              classRemoveButton="{{classRemoveButton}}" />
         {{else}}
           <div>
-            <button on:click="addClauseEntry(clause.key)">Add Entry</button>
+            <button class="{{classAddButton}}" on:click="addClauseEntry(clause.key)">Add Entry</button>
           </div>
           [
           {{#if clause.type.vector}}
             {{#if isCompoundVectorClauseKeys[clause.key]}}
               {{#each selector[clause.key] as clauseEntry, index}}
                 <div class="clause-entry">
-                  [<input type="text" bind:value="clauseEntry[0]" placeholder="property name" />,
+                  [<input class="{{classInput}}" type="text" bind:value="clauseEntry[0]" placeholder="property name" />,
                     <ValueEditor
                         on:makeDate="makeDate(clause.key, index)"
                         on:makeNotDate="makeNotDate(clause.key, index)"
                         bind:value="clauseEntry[1]"
                         bind:wholeEntry="clauseEntry"
                         valueTypeInitial="{{clause.type.type}}"
-                        allowedTypes="{{clause.type.allowedTypes}}"></ValueEditor>]
-                  <button on:click="removeClauseEntry(clause.key, index)">Remove</button>
+                        allowedTypes="{{clause.type.allowedTypes}}"
+                        classCheckbox="{{classCheckbox}}"
+                        classInput="{{classInput}}"
+                        classSelect="{{classSelect}}"></ValueEditor>]
+                  <button class="{{classRemoveButton}}" on:click="removeClauseEntry(clause.key, index)">Remove</button>
                 </div>
               {{/each}}
             {{else}}
               <div class="clause-entry">
-                <input type="text" bind:value="selector[clause.key][0]" placeholder="property name" />,
+                <input class="{{classInput}}" type="text" bind:value="selector[clause.key][0]" placeholder="property name" />,
                 <ValueEditor
                     on:makeDate="makeDate(clause.key, null)"
                     on:makeNotDate="makeNotDate(clause.key, null)"
                     bind:value="selector[clause.key][1]"
                     bind:wholeEntry="selector[clause.key]"
                     valueTypeInitial="{{clause.type.type}}"
-                    allowedTypes="{{clause.type.allowedTypes}}"></ValueEditor>
+                    allowedTypes="{{clause.type.allowedTypes}}"
+                    classCheckbox="{{classCheckbox}}"
+                    classInput="{{classInput}}"
+                    classSelect="{{classSelect}}"></ValueEditor>
               </div>
             {{/if}}
           {{else}}
@@ -85,8 +98,11 @@
                   <ValueEditor
                       bind:value="clauseEntry"
                       valueTypeInitial="{{clause.type.type}}"
-                      allowedTypes="{{clause.type.allowedTypes}}"></ValueEditor>
-                  <button on:click="removeClauseEntry(clause.key, index)">Remove</button>
+                      allowedTypes="{{clause.type.allowedTypes}}"
+                      classCheckbox="{{classCheckbox}}"
+                      classInput="{{classInput}}"
+                      classSelect="{{classSelect}}"></ValueEditor>
+                  <button class="{{classRemoveButton}}" on:click="removeClauseEntry(clause.key, index)">Remove</button>
                 </div>
               {{/each}}
             {{else}}
@@ -94,7 +110,10 @@
                 <ValueEditor
                     bind:value="selector[clause.key]"
                     valueTypeInitial="{{clause.type.type}}"
-                    allowedTypes="{{clause.type.allowedTypes}}"></ValueEditor>
+                    allowedTypes="{{clause.type.allowedTypes}}"
+                    classCheckbox="{{classCheckbox}}"
+                    classInput="{{classInput}}"
+                    classSelect="{{classSelect}}"></ValueEditor>
               </div>
             {{/if}}
           {{/if}}
@@ -103,7 +122,7 @@
       </div>
       {{#if clause.type !== "selector"}}
         <div class="remove">
-          <button on:click="removeClause(clause.key)">Remove</button>
+          <button class="{{classRemoveButton}}" on:click="removeClause(clause.key)">Remove</button>
         </div>
       {{/if}}
     </div>
@@ -152,7 +171,12 @@
           "ref": {type: "int", vector: true, allowedTypes: ["int"]},
           "!ref": {type: "int", vector: true, allowedTypes: ["int"]}
         },
-        selector: {type: '&'}
+        selector: {type: '&'},
+        classCheckbox: '',
+        classInput: '',
+        classSelect: '',
+        classAddButton: '',
+        classRemoveButton: '',
       }
     },
 
@@ -161,14 +185,14 @@
       clausesKeysTypes: (selector, supportedClauses) => Object.keys(selector).filter((i) => i !== "type").map((key) => supportedClauses.hasOwnProperty(key) ? {key, type: supportedClauses[key]} : {key, type: 'selector'}),
       isCompoundVectorClauseKeys: (selector, supportedClauses) => {
         const entries = Object.entries(selector);
-        const filtered = entries.filter((i) => i[0] !== "type" && supportedClauses[i[0]].vector);
+        const filtered = entries.filter((i) => i[0] !== "type" && !i[0].match(/^\d+$/) && supportedClauses[i[0]].vector);
         const mapped = filtered.map((i) => {i[1] = Array.isArray(i[1][0]); return i;});
         const map = mapped.length ? Object.assign(...mapped.map(([k, v]) => ({[k]: v}))) : {};
         return map;
       },
       isCompoundScalarClauseKeys: (selector, supportedClauses) => {
         const entries = Object.entries(selector);
-        const filtered = entries.filter((i) => i[0] !== "type" && !supportedClauses[i[0]].vector);
+        const filtered = entries.filter((i) => i[0] !== "type" && !i[0].match(/^\d+$/) && !supportedClauses[i[0]].vector);
         const mapped = filtered.map((i) => {i[1] = Array.isArray(i[1]); return i;});
         const map = mapped.length ? Object.assign(...mapped.map(([k, v]) => ({[k]: v}))) : {};
         return map;

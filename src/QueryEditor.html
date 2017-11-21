@@ -1,11 +1,11 @@
 <div class="query-editor">
-  <h2>Query Editor <button on:click="openHelpDialog()">Help</button></h2>
+  <h2>Query Editor <button class="{{classButton}}" on:click="openHelpDialog()">Help</button></h2>
   <h3>Options</h3>
   <div class="options-editor">
     {{#if remainingOptions.length}}
       <div>
         Add Option:
-        <select bind:value="__newOption" on:change="addOption()">
+        <select class="{{classSelect}}" bind:value="__newOption" on:change="addOption()">
           <option selected value="">
             - Select an Option -
           </option>
@@ -25,7 +25,7 @@
         </div>
         <div class="value">
           {{#if option.type === "class"}}
-            <select bind:value="options[option.key]">
+            <select class="{{classSelect}}" bind:value="options[option.key]">
               {{#each supportedClasses as curClass}}
                 <option value="{{curClass.class}}">
                   {{curClass.class}}
@@ -33,9 +33,15 @@
               {{/each}}
             </select>
           {{elseif option.type === "int" || option.type === "boolean" || option.type === "string"}}
-            <ValueEditor bind:value="options[option.key]" valueTypeInitial="{{option.type}}" allowedTypes="{{[option.type]}}"></ValueEditor>
+            <ValueEditor
+                bind:value="options[option.key]"
+                valueTypeInitial="{{option.type}}"
+                allowedTypes="{{[option.type]}}"
+                classCheckbox="{{classCheckbox}}"
+                classInput="{{classInput}}"
+                classSelect="{{classSelect}}"></ValueEditor>
           {{else}}
-            <select bind:value="options[option.key]">
+            <select class="{{classSelect}}" bind:value="options[option.key]">
               {{#each option.type as enumVal}}
                 <option value="{{enumVal}}">
                   {{enumVal}}
@@ -45,7 +51,7 @@
           {{/if}}
         </div>
         <div class="remove">
-          <button on:click="removeOption(option.key)">Remove</button>
+          <button class="{{classRemoveButton}}" on:click="removeOption(option.key)">Remove</button>
         </div>
       </div>
     {{/each}}
@@ -54,14 +60,21 @@
   <h3>Selectors</h3>
   <div class="selector-editor">
     <div>
-      <button on:click="addSelector()">Add Selector</button>
+      <button class="{{classAddButton}}" on:click="addSelector()">Add Selector</button>
     </div>
     {{#each selectors as selector, index}}
-      <SelectorEditor bind:selector on:remove="removeSelector(index)"></SelectorEditor>
+      <SelectorEditor
+          bind:selector
+          on:remove="removeSelector(index)"
+          classCheckbox="{{classCheckbox}}"
+          classInput="{{classInput}}"
+          classSelect="{{classSelect}}"
+          classAddButton="{{classAddButton}}"
+          classRemoveButton="{{classRemoveButton}}"></SelectorEditor>
     {{/each}}
   </div>
   <div>
-    <label><input type="checkbox" bind:checked="showQuery" />Show Query Preview</label>
+    <label><input class="{{classCheckbox}}" type="checkbox" bind:checked="showQuery" />Show Query Preview</label>
   </div>
   {{#if showQuery}}
     <h3>Query</h3>
@@ -293,7 +306,7 @@
       </div>
 
       <div class="actions">
-        <button on:click="closeHelpDialog()">Close</button>
+        <button class="{{classButton}}" on:click="closeHelpDialog()">Close</button>
       </div>
     </div>
   </div>
@@ -320,7 +333,13 @@
         },
         options: {},
         selectors: [],
-        showQuery: false
+        showQuery: false,
+        classCheckbox: '',
+        classInput: '',
+        classSelect: '',
+        classAddButton: '',
+        classRemoveButton: '',
+        classButton: '',
       }
     },
 
