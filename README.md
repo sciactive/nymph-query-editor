@@ -22,9 +22,21 @@ This repository is the JavaScript query editor widget built with Svelte. For mor
 npm install --save nymph-query-editor
 ```
 
-To use, include the files from the lib folder, and instantiate with a target and list of Nymph entity classes:
+To use, include Locutus' strtotime and the files from the lib folder, and instantiate with a target and list of Nymph entity classes:
 
 ```html
+<!-- Locutus strtotime (loading it manually) -->
+<script type="text/javascript">
+  if (typeof module !== "undefined") _module = module;
+  module = {};
+</script>
+<script src="/node_modules/locutus/php/datetime/strtotime.js"></script>
+<script type="text/javascript">
+  strtotime = module.exports;
+  delete module;
+  if (typeof _module !== "undefined") module = _module;
+</script>
+<!-- Query Editor JS -->
 <script src="/node_modules/nymph-query-editor/lib/ValueEditor.js"></script>
 <script src="/node_modules/nymph-query-editor/lib/SelectorEditor.js"></script>
 <script src="/node_modules/nymph-query-editor/lib/QueryEditor.js"></script>
