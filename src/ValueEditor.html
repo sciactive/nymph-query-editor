@@ -72,16 +72,15 @@
         this.handleDateInput();
       }
 
-      let dateHandleInterval;
       this.observe("valueTypeCurrent", (value) => {
         if (value === "date") {
-          if (!dateHandleInterval) {
-            dateHandleInterval = setInterval(() => this.handleDateInput(), 1000);
+          if (!this.dateHandleInterval) {
+            this.dateHandleInterval = setInterval(() => this.handleDateInput(), 1000);
           }
         } else {
-          if (dateHandleInterval) {
-            clearInterval(dateHandleInterval);
-            dateHandleInterval = false;
+          if (this.dateHandleInterval) {
+            clearInterval(this.dateHandleInterval);
+            this.dateHandleInterval = false;
           }
         }
       });
@@ -99,6 +98,13 @@
           }
         }
       }, {init: false});
+    },
+
+    ondestroy () {
+      if (this.dateHandleInterval) {
+        clearInterval(this.dateHandleInterval);
+        this.dateHandleInterval = false;
+      }
     },
 
     data () {

@@ -266,8 +266,6 @@
       makeDate (clauseKey, index) {
         const selector = this.get("selector");
 
-        console.log("make date");
-
         if (index === null) {
           selector[clauseKey][1] = null;
           if (selector[clauseKey].length === 2) {
@@ -285,8 +283,6 @@
 
       makeNotDate (clauseKey, index) {
         const selector = this.get("selector");
-
-        console.log("make not date");
 
         if (index === null) {
           if (selector[clauseKey].length === 3) {
