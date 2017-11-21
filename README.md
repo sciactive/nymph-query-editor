@@ -22,27 +22,36 @@ This repository is the JavaScript query editor widget built with Svelte. For mor
 npm install --save nymph-query-editor
 ```
 
-To use, include the file from either the UMD, CommonJS, or IIFE lib folder, and instantiate with a target and list of Nymph entity classes:
+To use, include the files from the lib folder, and instantiate with a target and list of Nymph entity classes:
 
-```js
-var myQueryEditor = new HelloWorld({
-  target: document.querySelector('query-editor'),
-  data: {
-    supportedClasses: [
-      MyFirstEntity,
-      MySecondEntity
-    ],
-    options: {
-      "class": MyFirstEntity.class
-    },
-    selectors: [
-      {
-        "type": "&",
-        "gte": ["cdate", null, "-1 week"]
+```html
+<script src="/node_modules/nymph-query-editor/lib/ValueEditor.js"></script>
+<script src="/node_modules/nymph-query-editor/lib/SelectorEditor.js"></script>
+<script src="/node_modules/nymph-query-editor/lib/QueryEditor.js"></script>
+<script type="text/javascript">
+  ((global, QueryEditor) => {
+    // If you don't use AMD or CJS, just do this:
+    QueryEditor = (QueryEditor && QueryEditor.__esModule) ? QueryEditor["default"] : QueryEditor;
+    const myQueryEditor = new QueryEditor({
+      target: document.querySelector('query-editor'),
+      data: {
+        supportedClasses: [
+          MyFirstEntity,
+          MySecondEntity
+        ],
+        options: {
+          "class": MyFirstEntity.class
+        },
+        selectors: [
+          {
+            "type": "&",
+            "gte": ["cdate", null, "-1 week"]
+          }
+        ]
       }
-    ]
-  }
-});
+    });
+  })(this, QueryEditor);
+</script>
 ```
 
 Then you can get the query by the options and selectors:
