@@ -326,6 +326,7 @@
 
       removeSelector (key) {
         const selector = this.get("selector");
+        this.set({selector: {type: '&'}});
 
         // Delete the keyed selector.
         delete selector[key];

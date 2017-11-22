@@ -417,6 +417,8 @@
 
       removeSelector (index) {
         const selectors = this.get("selectors");
+        this.set({selectors: []});
+
         selectors.splice(index, 1);
         this.set({selectors});
       },
