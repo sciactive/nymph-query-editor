@@ -161,8 +161,11 @@
             isset - A name. True if the named variable exists and is not null.
           </li>
           <li>
-            data - An array with a name, then value. True if the named variable is
+            equal - An array with a name, then value. True if the named variable is
             defined and equal.
+          </li>
+          <li>
+            data (deprecated) - An alias for equal.
           </li>
           <li>
             strict - An array with a name, then value. True if the named variable
@@ -265,7 +268,7 @@
     'type': '&amp;', // all must be true
     'tag': 'person',
     'isset': 'spouse',
-    'data': [
+    'equal': [
       ['gender', 'male'],
       ['lname', 'Smith']
     ],
@@ -288,7 +291,7 @@
   },
   {
     'type': '|',
-    'data': [
+    'equal': [
       ['name', 'Clark'],
       ['name', 'James']
     ],
