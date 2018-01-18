@@ -32,8 +32,8 @@
     "babel-plugin-transform-es2015-modules-umd": "^6.24.1",
     "babel-preset-env": "^1.6.1",
     "babel-preset-stage-3": "^6.24.1",
-    "svelte": "^1.48.0",
-    "svelte-cli": "^1.4.0"
+    "svelte": "^1.51.1",
+    "svelte-cli": "^2.1.0"
   },
   "dependencies": {
     "locutus": "^2.0.9"
