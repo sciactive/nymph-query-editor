@@ -1,6 +1,6 @@
 # Nymph Query Editor - collaborative app data
 
-[![Latest Stable Version](https://img.shields.io/npm/v/nymph-query-editor.svg?style=flat)](https://www.npmjs.com/package/nymph-query-editor) [![License](https://img.shields.io/npm/l/nymph-query-editor.svg?style=flat)](https://www.npmjs.com/package/nymph-query-editor) [![Open Issues](https://img.shields.io/github/issues/sciactive/nymph-query-editor.svg?style=flat)](https://github.com/sciactive/nymph-query-editor/issues)
+[![Latest Stable Version](https://img.shields.io/npm/v/nymph-query-editor.svg)](https://www.npmjs.com/package/nymph-query-editor) [![Open Issues](https://img.shields.io/github/issues/sciactive/nymph-query-editor.svg)](https://github.com/sciactive/nymph-query-editor/issues) [![License](https://img.shields.io/github/license/sciactive/nymph-query-editor.svg)]()
 
 Nymph is an object data store that is easy to use in JavaScript and PHP.
 
