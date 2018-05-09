@@ -16,7 +16,7 @@ This repository is the JavaScript query editor widget built with Svelte. For mor
 
 ## Setting up Nymph Query Editor
 
-<div dir="rtl">Quick Setup with NPM</div>
+(with UMD in Vanilla ES 5)
 
 ```sh
 npm install --save nymph-query-editor
@@ -30,20 +30,18 @@ To use, include Locutus' strtotime and the files from the lib folder, and instan
   if (typeof module !== "undefined") _module = module;
   module = {};
 </script>
-<script src="/node_modules/locutus/php/datetime/strtotime.js"></script>
+<script src="node_modules/locutus/php/datetime/strtotime.js"></script>
 <script type="text/javascript">
   strtotime = module.exports;
   delete module;
   if (typeof _module !== "undefined") module = _module;
 </script>
 <!-- Query Editor JS -->
-<script src="/node_modules/nymph-query-editor/lib/ValueEditor.js"></script>
-<script src="/node_modules/nymph-query-editor/lib/SelectorEditor.js"></script>
-<script src="/node_modules/nymph-query-editor/lib/QueryEditor.js"></script>
+<script src="node_modules/nymph-query-editor/lib/ValueEditor.js"></script>
+<script src="node_modules/nymph-query-editor/lib/SelectorEditor.js"></script>
+<script src="node_modules/nymph-query-editor/lib/QueryEditor.js"></script>
 <script type="text/javascript">
   ((global, QueryEditor) => {
-    // If you don't use AMD or CJS, just do this:
-    QueryEditor = (QueryEditor && QueryEditor.__esModule) ? QueryEditor["default"] : QueryEditor;
     const myQueryEditor = new QueryEditor({
       target: document.querySelector('query-editor'),
       data: {
@@ -62,14 +60,15 @@ To use, include Locutus' strtotime and the files from the lib folder, and instan
         ]
       }
     });
-  })(this, QueryEditor);
+  })(this, QueryEditor.default);
 </script>
 ```
 
 Then you can get the query by the options and selectors:
 
 ```js
-const query = [myQueryEditor.get("options"), ...myQueryEditor.get("selectors")];
+const {options, selectors} = myQueryEditor.get();
+const query = [options, ...selectors];
 ```
 
 For a thorough step by step guide to setting up Nymph on your own server, visit the [Setup Guide](https://github.com/sciactive/nymph/wiki/Setup-Guide).
