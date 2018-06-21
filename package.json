@@ -1,6 +1,6 @@
 {
   "name": "nymph-query-editor",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0-beta.2",
   "description": "A Nymph query editor built with Svelte.",
   "main": "lib/umd/NymphQueryEditor.js",
   "browser": "lib/es/NymphQueryEditor.js",
