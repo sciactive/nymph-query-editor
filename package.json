@@ -2,14 +2,15 @@
   "name": "nymph-query-editor",
   "version": "2.0.0-beta.1",
   "description": "A Nymph query editor built with Svelte.",
-  "main": "lib/umd/QueryEditor.js",
-  "browser": "lib/es/QueryEditor.js",
+  "main": "lib/umd/NymphQueryEditor.js",
+  "browser": "lib/es/NymphQueryEditor.js",
   "directories": {
     "lib": "lib/umd"
   },
   "scripts": {
-    "build": "npm run compile && npm run transpile",
+    "build": "npm run compile && npm run copy && npm run transpile",
     "compile": "svelte compile src/ -o lib/es/",
+    "copy": "cp src/NymphQueryEditor.js lib/es/",
     "transpile": "babel -d lib/umd/ lib/es/",
     "prepare": "npm run lint && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
