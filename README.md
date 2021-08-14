@@ -4,6 +4,10 @@
 
 Nymph is an object data store that is easy to use in JavaScript and PHP.
 
+## Deprecation Notice
+
+The PHP implementation of Nymph/Tilmeld has been deprecated. It will no longer have any new features added. Instead, a new version of Nymph running on Node.js, written entirely in TypeScript will replace the PHP implementation. You can find it over at the [Nymph.js repo](https://github.com/sciactive/nymphjs).
+
 ## Installation
 
 You can install Nymph Query Editor with NPM.
@@ -43,22 +47,19 @@ To use, include Locutus' strtotime and the files from the lib folder, and instan
 <script type="text/javascript">
   ((global, QueryEditor) => {
     const myQueryEditor = new QueryEditor({
-      target: document.querySelector('query-editor'),
+      target: document.querySelector("query-editor"),
       data: {
-        supportedClasses: [
-          MyFirstEntity,
-          MySecondEntity
-        ],
+        supportedClasses: [MyFirstEntity, MySecondEntity],
         options: {
-          "class": MyFirstEntity.class
+          class: MyFirstEntity.class,
         },
         selectors: [
           {
-            "type": "&",
-            "gte": ["cdate", null, "-1 week"]
-          }
-        ]
-      }
+            type: "&",
+            gte: ["cdate", null, "-1 week"],
+          },
+        ],
+      },
     });
   })(this, QueryEditor.default);
 </script>
@@ -67,7 +68,7 @@ To use, include Locutus' strtotime and the files from the lib folder, and instan
 Then you can get the query by the options and selectors:
 
 ```js
-const {options, selectors} = myQueryEditor.get();
+const { options, selectors } = myQueryEditor.get();
 const query = [options, ...selectors];
 ```
 
